@@ -144,7 +144,7 @@ extension CameraManager {
 //        let displayLayer: AVCaptureVideoPreviewLayer = AVCaptureVideoPreviewLayer.init(session: cameraSession)
 //        displayLayer.frame = view.bounds
 //        view.layer.addSublayer(displayLayer)
-        
+//
         
         displayView.delegate = self
         displayView.frame = view.bounds
@@ -155,19 +155,32 @@ extension CameraManager {
 
 // MARK: - AVCaptureVideoDataOutputSampleBufferDelegate
 extension CameraManager: AVCaptureVideoDataOutputSampleBufferDelegate {
-    func captureOutput(_ output: AVCaptureOutput, didDrop sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
-        
-        let pixelBuffer: CVPixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer)!
+    func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
+        guard let pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else {
+            return
+        }
         let width: size_t = CVPixelBufferGetWidth(pixelBuffer)
         let height: size_t = CVPixelBufferGetHeight(pixelBuffer)
         
         var metalTexutreRef: CVMetalTexture?
-        let status: CVReturn = CVMetalTextureCacheCreateTextureFromImage(kCFAllocatorDefault, textureCache, pixelBuffer, nil, MTLPixelFormat.bgra8Unorm, width, height, 0, &metalTexutreRef)
+        CVMetalTextureCacheCreate(kCFAllocatorDefault, nil, displayView.device!, nil, &textureCache)
         
-        if status == kCVReturnSuccess {
-            displayView.drawableSize = CGSize.init(width: width, height: height)
-            texture = CVMetalTextureGetTexture(metalTexutreRef!)
-        }
+//        let pixelBufferAttri = [kCVPixelBufferIOSurfacePropertiesKey as NSObject: [:] as CFDictionary] as CFDictionary
+//        let s = CVPixelBufferCreate(
+//            kCFAllocatorDefault,
+//            width,
+//            height,
+//            kCVPixelFormatType_32BGRA,
+//            pixelBufferAttri,
+//            &metalTexutreRef)
+//
+//        let status: CVReturn = CVMetalTextureCacheCreateTextureFromImage(kCFAllocatorDefault, textureCache, pixelBuffer, nil, MTLPixelFormat.bgra8Unorm, width, height, 0, &metalTexutreRef)
+//
+//
+//        if status == kCVReturnSuccess {
+//            displayView.drawableSize = CGSize.init(width: width, height: height)
+//            texture = CVMetalTextureGetTexture(metalTexutreRef!)
+//        }
     }
 }
 
