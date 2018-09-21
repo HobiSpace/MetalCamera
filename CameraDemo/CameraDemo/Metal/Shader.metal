@@ -24,7 +24,7 @@ typedef struct
 
 
 
-vertex VertexOut myVertexShader(const device VertexIn* vertexArray [[buffer(0)]],
+vertex VertexOut vertexShader(const device VertexIn* vertexArray [[buffer(0)]],
                                 unsigned int vid  [[vertex_id]]){
     
     VertexOut verOut;
@@ -35,7 +35,7 @@ vertex VertexOut myVertexShader(const device VertexIn* vertexArray [[buffer(0)]]
 }
 
 
-fragment half4 myFragmentShader(
+fragment half4 fragmentShader(
                                 VertexOut input [[ stage_in ]],
                                 texture2d<half> colorTexture [[ texture(0) ]]
                                 )

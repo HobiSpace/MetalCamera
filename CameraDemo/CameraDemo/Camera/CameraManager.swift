@@ -156,31 +156,32 @@ extension CameraManager {
 // MARK: - AVCaptureVideoDataOutputSampleBufferDelegate
 extension CameraManager: AVCaptureVideoDataOutputSampleBufferDelegate {
     func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
+
         guard let pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else {
             return
         }
         let width: size_t = CVPixelBufferGetWidth(pixelBuffer)
         let height: size_t = CVPixelBufferGetHeight(pixelBuffer)
         
-        var metalTexutreRef: CVMetalTexture?
-        CVMetalTextureCacheCreate(kCFAllocatorDefault, nil, displayView.device!, nil, &textureCache)
         
+        CVMetalTextureCacheCreate(kCFAllocatorDefault, nil, displayView.device!, nil, &textureCache)
+        var metalTexutreRef: CVMetalTexture?
 //        let pixelBufferAttri = [kCVPixelBufferIOSurfacePropertiesKey as NSObject: [:] as CFDictionary] as CFDictionary
-//        let s = CVPixelBufferCreate(
-//            kCFAllocatorDefault,
-//            width,
-//            height,
-//            kCVPixelFormatType_32BGRA,
-//            pixelBufferAttri,
-//            &metalTexutreRef)
-//
-//        let status: CVReturn = CVMetalTextureCacheCreateTextureFromImage(kCFAllocatorDefault, textureCache, pixelBuffer, nil, MTLPixelFormat.bgra8Unorm, width, height, 0, &metalTexutreRef)
-//
-//
-//        if status == kCVReturnSuccess {
-//            displayView.drawableSize = CGSize.init(width: width, height: height)
-//            texture = CVMetalTextureGetTexture(metalTexutreRef!)
-//        }
+        CVPixelBufferCreate(
+            kCFAllocatorDefault,
+            width,
+            height,
+            kCVPixelFormatType_32BGRA,
+            nil,
+            &metalTexutreRef)
+
+        let status: CVReturn = CVMetalTextureCacheCreateTextureFromImage(kCFAllocatorDefault, textureCache, pixelBuffer, nil, MTLPixelFormat.bgra8Unorm, width, height, 0, &metalTexutreRef)
+
+
+        if status == kCVReturnSuccess {
+            displayView.drawableSize = CGSize.init(width: width, height: height)
+            texture = CVMetalTextureGetTexture(metalTexutreRef!)
+        }
     }
 }
 
