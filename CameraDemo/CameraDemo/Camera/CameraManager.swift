@@ -36,12 +36,12 @@ class CameraManager: NSObject {
     
     lazy var vertex: MTLBuffer? = {
         let vertexArray: [Vertex] = [
-            Vertex.init(position: float4.init(0.5, -0.5, 0.0, 1.0), texturePos: float2.init(1, 1)),
-            Vertex.init(position: float4.init(-0.5, -0.5, 0.0, 1.0), texturePos: float2.init(1, 0)),
-            Vertex.init(position: float4.init(-0.5,  0.5, 0.0, 1.0), texturePos: float2.init(0, 0)),
-            Vertex.init(position: float4.init(0.5, -0.5, 0.0, 1.0), texturePos: float2.init(1, 1)),
-            Vertex.init(position: float4.init(-0.5,  0.5, 0.0, 1.0), texturePos: float2.init(0, 0)),
-            Vertex.init(position: float4.init(0.5,  0.5, 0.0, 1.0), texturePos: float2.init(0, 1)),
+            Vertex.init(position: float4.init(1, -1, 0.0, 1.0), texturePos: float2.init(1, 1)),
+            Vertex.init(position: float4.init(-1, -1, 0.0, 1.0), texturePos: float2.init(1, 0)),
+            Vertex.init(position: float4.init(-1,  1, 0.0, 1.0), texturePos: float2.init(0, 0)),
+            Vertex.init(position: float4.init(1, -1, 0.0, 1.0), texturePos: float2.init(1, 1)),
+            Vertex.init(position: float4.init(-1,  1, 0.0, 1.0), texturePos: float2.init(0, 0)),
+            Vertex.init(position: float4.init(1,  1, 0.0, 1.0), texturePos: float2.init(0, 1)),
             ]
         
         let buffer: MTLBuffer? = displayView.device?.makeBuffer(bytes: vertexArray, length: MemoryLayout<Vertex>.stride * 6, options: .storageModeShared)
@@ -148,7 +148,6 @@ extension CameraManager {
 //        let displayLayer: AVCaptureVideoPreviewLayer = AVCaptureVideoPreviewLayer.init(session: cameraSession)
 //        displayLayer.frame = view.bounds
 //        view.layer.addSublayer(displayLayer)
-//
         
         displayView.delegate = self
         displayView.frame = view.bounds
