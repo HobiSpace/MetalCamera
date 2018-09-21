@@ -29,6 +29,7 @@ class CameraManager: NSObject {
     var texture: MTLTexture!
     var textureCache: CVMetalTextureCache!
     
+    
     lazy var commandQueue: MTLCommandQueue? = {
         return displayView.device?.makeCommandQueue()
     }()
@@ -71,6 +72,7 @@ class CameraManager: NSObject {
         
         cameraDataOutput = {
             let dataOutput: AVCaptureVideoDataOutput = AVCaptureVideoDataOutput.init()
+            dataOutput.videoSettings = [kCVPixelBufferPixelFormatTypeKey as String : kCVPixelFormatType_32BGRA]
             return dataOutput
         }()
         
@@ -85,6 +87,8 @@ class CameraManager: NSObject {
         }()
         
         super.init()
+        
+        CVMetalTextureCacheCreate(kCFAllocatorDefault, nil, displayView.device!, nil, &textureCache)
     }
     
 }
@@ -160,28 +164,27 @@ extension CameraManager: AVCaptureVideoDataOutputSampleBufferDelegate {
         guard let pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else {
             return
         }
+        
         let width: size_t = CVPixelBufferGetWidth(pixelBuffer)
         let height: size_t = CVPixelBufferGetHeight(pixelBuffer)
-        
-        
-        CVMetalTextureCacheCreate(kCFAllocatorDefault, nil, displayView.device!, nil, &textureCache)
+  
         var metalTexutreRef: CVMetalTexture?
-//        let pixelBufferAttri = [kCVPixelBufferIOSurfacePropertiesKey as NSObject: [:] as CFDictionary] as CFDictionary
-        CVPixelBufferCreate(
-            kCFAllocatorDefault,
-            width,
-            height,
-            kCVPixelFormatType_32BGRA,
-            nil,
-            &metalTexutreRef)
-
+        
+        let s: CVReturn = CVPixelBufferCreate(kCFAllocatorDefault, 1920, 1080, kCVPixelFormatType_32BGRA, nil, &metalTexutreRef)
+        
+        guard s == kCVReturnSuccess else {
+            return
+        }
+        CVPixelBufferLockBaseAddress(pixelBuffer, [])
         let status: CVReturn = CVMetalTextureCacheCreateTextureFromImage(kCFAllocatorDefault, textureCache, pixelBuffer, nil, MTLPixelFormat.bgra8Unorm, width, height, 0, &metalTexutreRef)
 
-
-        if status == kCVReturnSuccess {
+        if status == kCVReturnSuccess, let textureRef = metalTexutreRef {
             displayView.drawableSize = CGSize.init(width: width, height: height)
-            texture = CVMetalTextureGetTexture(metalTexutreRef!)
+            texture = CVMetalTextureGetTexture(textureRef)
+        } else {
+            print("error")
         }
+        CVPixelBufferUnlockBaseAddress(pixelBuffer, [])
     }
 }
 
@@ -192,11 +195,15 @@ extension CameraManager: MTKViewDelegate {
     }
     
     func draw(in view: MTKView) {
+        
         guard texture != nil else {
             return
         }
         let commandBuffer = commandQueue?.makeCommandBuffer()
         let renderPassDes: MTLRenderPassDescriptor? = view.currentRenderPassDescriptor
+        guard renderPassDes != nil else {
+            return
+        }
         let renderEncoder: MTLRenderCommandEncoder? = commandBuffer?.makeRenderCommandEncoder(descriptor: renderPassDes!)
         renderEncoder?.setViewport(MTLViewport.init(originX: 0, originY: 0, width: Double(view.drawableSize.width), height: Double(view.drawableSize.height), znear: -1, zfar: 1))
         renderEncoder?.setRenderPipelineState(pipelineState!)
