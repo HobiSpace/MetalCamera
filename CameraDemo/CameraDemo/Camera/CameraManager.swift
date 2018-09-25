@@ -25,44 +25,14 @@ class CameraManager: NSObject {
     var processQueue: DispatchQueue
     
     /// Metal
+    var metalDevice: MTLDevice?
     var displayView: MTKView
-    var texture: MTLTexture!
+    var vertex: MTLBuffer?
+    var texture: MTLTexture?
     var textureCache: CVMetalTextureCache!
-    
-    
-    lazy var commandQueue: MTLCommandQueue? = {
-        return displayView.device?.makeCommandQueue()
-    }()
-    
-    lazy var vertex: MTLBuffer? = {
-        let vertexArray: [Vertex] = [
-            Vertex.init(position: float4.init(1, -1, 0.0, 1.0), texturePos: float2.init(1, 1)),
-            Vertex.init(position: float4.init(-1, -1, 0.0, 1.0), texturePos: float2.init(1, 0)),
-            Vertex.init(position: float4.init(-1,  1, 0.0, 1.0), texturePos: float2.init(0, 0)),
-            Vertex.init(position: float4.init(1, -1, 0.0, 1.0), texturePos: float2.init(1, 1)),
-            Vertex.init(position: float4.init(-1,  1, 0.0, 1.0), texturePos: float2.init(0, 0)),
-            Vertex.init(position: float4.init(1,  1, 0.0, 1.0), texturePos: float2.init(0, 1)),
-            ]
-        
-        let buffer: MTLBuffer? = displayView.device?.makeBuffer(bytes: vertexArray, length: MemoryLayout<Vertex>.stride * 6, options: .storageModeShared)
-        return buffer
-    }()
-    
-    lazy var pipelineState: MTLRenderPipelineState? = {
-        let pipeLineDes: MTLRenderPipelineDescriptor = MTLRenderPipelineDescriptor.init()
-        let library: MTLLibrary? = displayView.device?.makeDefaultLibrary()
-        let vertexFunc: MTLFunction? = library?.makeFunction(name: "vertexShader")
-        let fragmentFunc: MTLFunction? = library?.makeFunction(name: "fragmentShader")
-        pipeLineDes.vertexFunction = vertexFunc
-        pipeLineDes.fragmentFunction = fragmentFunc
-        pipeLineDes.colorAttachments[0].pixelFormat = displayView.colorPixelFormat
-        do {
-            let renderPipeStatue = try displayView.device?.makeRenderPipelineState(descriptor: pipeLineDes)
-            return renderPipeStatue
-        } catch {
-            return nil
-        }
-    }()
+    var commandQueue: MTLCommandQueue?
+    var pipelineState: MTLRenderPipelineState?
+    var computePipeLineState: MTLComputePipelineState?
     
     override init() {
         cameraSession = {
@@ -83,11 +53,15 @@ class CameraManager: NSObject {
         
         displayView = {
             let view: MTKView = MTKView.init(frame: CGRect.zero, device: MTLCreateSystemDefaultDevice()!)
+            view.framebufferOnly = false
             return view
         }()
         
         super.init()
         
+        createBuffer()
+        registerShader()
+        registerComputePipeLineState()
         CVMetalTextureCacheCreate(kCFAllocatorDefault, nil, displayView.device!, nil, &textureCache)
     }
     
@@ -106,6 +80,53 @@ extension CameraManager {
         }
         return nil
     }
+    
+    private func render() {
+
+    }
+    
+    private func createBuffer() {
+        metalDevice = MTLCreateSystemDefaultDevice()
+        commandQueue = metalDevice?.makeCommandQueue()
+        
+        let vertexArray: [Vertex] = [
+            Vertex.init(position: float4.init(1, -1, 0.0, 1.0), texturePos: float2.init(1, 1)),
+            Vertex.init(position: float4.init(-1, -1, 0.0, 1.0), texturePos: float2.init(1, 0)),
+            Vertex.init(position: float4.init(-1,  1, 0.0, 1.0), texturePos: float2.init(0, 0)),
+            Vertex.init(position: float4.init(1, -1, 0.0, 1.0), texturePos: float2.init(1, 1)),
+            Vertex.init(position: float4.init(-1,  1, 0.0, 1.0), texturePos: float2.init(0, 0)),
+            Vertex.init(position: float4.init(1,  1, 0.0, 1.0), texturePos: float2.init(0, 1)),
+            ]
+        
+        let buffer: MTLBuffer? = displayView.device?.makeBuffer(bytes: vertexArray, length: MemoryLayout<Vertex>.stride * 6, options: .storageModeShared)
+        vertex = buffer
+    }
+    
+    private func registerShader() {
+        let pipeLineDes: MTLRenderPipelineDescriptor = MTLRenderPipelineDescriptor.init()
+        let library: MTLLibrary? = displayView.device?.makeDefaultLibrary()
+        let vertexFunc: MTLFunction? = library?.makeFunction(name: "vertexShader")
+        let fragmentFunc: MTLFunction? = library?.makeFunction(name: "fragmentShader")
+        pipeLineDes.vertexFunction = vertexFunc
+        pipeLineDes.fragmentFunction = fragmentFunc
+        pipeLineDes.colorAttachments[0].pixelFormat = displayView.colorPixelFormat
+        do {
+            pipelineState = try displayView.device?.makeRenderPipelineState(descriptor: pipeLineDes)
+        } catch {
+            
+        }
+    }
+    
+    func registerComputePipeLineState() {
+        let library: MTLLibrary? = displayView.device?.makeDefaultLibrary()
+        let computeFunc: MTLFunction? = library?.makeFunction(name: "kernel_function")
+        
+        guard let computeFunction = computeFunc else {
+            return
+        }
+        
+        computePipeLineState = try! displayView.device?.makeComputePipelineState(function: computeFunction)
+    }
 }
 
 // MARK: - Public
@@ -122,7 +143,7 @@ extension CameraManager {
     func switchDevice(withFrontCamera: Bool) {
         let devicePostion: AVCaptureDevice.Position = withFrontCamera == true ? AVCaptureDevice.Position.front : AVCaptureDevice.Position.back
         
-        guard cameraDevice?.position != devicePostion, let device:AVCaptureDevice = cameraDeviceWithPosition(devicePostion) else {
+        guard cameraDevice?.position != devicePostion, let device: AVCaptureDevice = cameraDeviceWithPosition(devicePostion) else {
             return
         }
         
@@ -145,10 +166,6 @@ extension CameraManager {
     }
     
     func configDisplayView(_ view: UIView) {
-//        let displayLayer: AVCaptureVideoPreviewLayer = AVCaptureVideoPreviewLayer.init(session: cameraSession)
-//        displayLayer.frame = view.bounds
-//        view.layer.addSublayer(displayLayer)
-        
         displayView.delegate = self
         displayView.frame = view.bounds
         view.addSubview(displayView)
@@ -190,14 +207,16 @@ extension CameraManager: MTKViewDelegate {
     
     func draw(in view: MTKView) {
         
-        guard texture != nil else {
+        guard texture != nil, view.currentDrawable != nil else {
             return
         }
+        
         let commandBuffer = commandQueue?.makeCommandBuffer()
         let renderPassDes: MTLRenderPassDescriptor? = view.currentRenderPassDescriptor
         guard renderPassDes != nil else {
             return
         }
+        
         let renderEncoder: MTLRenderCommandEncoder? = commandBuffer?.makeRenderCommandEncoder(descriptor: renderPassDes!)
         renderEncoder?.setViewport(MTLViewport.init(originX: 0, originY: 0, width: Double(view.drawableSize.width), height: Double(view.drawableSize.height), znear: -1, zfar: 1))
         renderEncoder?.setRenderPipelineState(pipelineState!)
@@ -205,6 +224,21 @@ extension CameraManager: MTKViewDelegate {
         renderEncoder?.setFragmentTexture(texture, index: 0)
         renderEncoder?.drawPrimitives(type: MTLPrimitiveType.triangle, vertexStart: 0, vertexCount: 6)
         renderEncoder?.endEncoding()
+        
+        let computeEncoder: MTLComputeCommandEncoder? = commandBuffer?.makeComputeCommandEncoder()
+        computeEncoder?.setComputePipelineState(computePipeLineState!)
+        computeEncoder?.setTexture(texture, index: 0)
+        computeEncoder?.setTexture(view.currentDrawable?.texture, index: 1)
+        let threads = MTLSize(width: 16, height: 16, depth: 1)
+        
+        let threadgroups = MTLSize(width: texture!.width / threads.width,
+                                   height: texture!.height / threads.height,
+                                   depth: 1)
+        
+        computeEncoder?.dispatchThreadgroups(threadgroups, threadsPerThreadgroup: threads)
+        
+        computeEncoder?.endEncoding()
+        
         commandBuffer?.present(view.currentDrawable!)
         commandBuffer?.commit()
     }

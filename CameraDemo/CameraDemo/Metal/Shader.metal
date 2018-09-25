@@ -47,3 +47,14 @@ fragment half4 fragmentShader(
     //    return float4(0, 0, 1, 1);
 }
 
+kernel void kernel_function(texture2d<float, access::read> inTexture [[texture(0)]],
+                            texture2d<float, access::write> outTexture [[texture(1)]],
+                            uint2 gid [[thread_position_in_grid]]) {
+    
+    float4 inColor = inTexture.read(gid);
+    
+    const float4 outColor = float4(inColor.x * 0.5, inColor.y * 0.5, inColor.z * 0.5, inColor.w * 0.5);
+//    const float4 outColor = float4(pow(inColor.rgb, float3(0.4/* gamma校正参数 */)), inColor.a);
+    
+    outTexture.write(outColor, gid);
+}
