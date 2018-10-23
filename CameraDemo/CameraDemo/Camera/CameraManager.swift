@@ -10,6 +10,13 @@ import UIKit
 import AVFoundation
 import MetalKit
 
+enum FilterType: String {
+    case Original = "original"
+    case Gray = "gray_kernel_function"
+    case BlackAndWhite = "black_white_kernel_function"
+    case Movie = "movie_kernel_function"
+}
+
 struct Vertex {
     var position: float4
     var texturePos: float2
@@ -61,7 +68,7 @@ class CameraManager: NSObject {
         
         createBuffer()
         registerShader()
-        registerComputePipeLineState()
+//        registerComputePipeLineState()
         CVMetalTextureCacheCreate(kCFAllocatorDefault, nil, displayView.device!, nil, &textureCache)
     }
     
@@ -86,7 +93,7 @@ extension CameraManager {
     }
     
     private func createBuffer() {
-        metalDevice = MTLCreateSystemDefaultDevice()
+        metalDevice = displayView.device
         commandQueue = metalDevice?.makeCommandQueue()
         
         let vertexArray: [Vertex] = [
@@ -129,6 +136,8 @@ extension CameraManager {
     }
 }
 
+
+
 // MARK: - Public
 extension CameraManager {
     func startCapture(withFrontCamera: Bool) {
@@ -168,7 +177,24 @@ extension CameraManager {
     func configDisplayView(_ view: UIView) {
         displayView.delegate = self
         displayView.frame = view.bounds
-        view.addSubview(displayView)
+        view.insertSubview(displayView, at: 0)
+    }
+    
+    
+    func filter(_ type: FilterType) {
+        switch type {
+        case .Original:
+            computePipeLineState = nil
+            break
+        default:
+            let library: MTLLibrary? = displayView.device?.makeDefaultLibrary()
+            let computeFunc: MTLFunction? = library?.makeFunction(name: type.rawValue)
+            guard let computeFunction = computeFunc else {
+                return
+            }
+            computePipeLineState = try! displayView.device?.makeComputePipelineState(function: computeFunction)
+            break
+        }
     }
     
 }
@@ -225,19 +251,29 @@ extension CameraManager: MTKViewDelegate {
         renderEncoder?.drawPrimitives(type: MTLPrimitiveType.triangle, vertexStart: 0, vertexCount: 6)
         renderEncoder?.endEncoding()
         
-        let computeEncoder: MTLComputeCommandEncoder? = commandBuffer?.makeComputeCommandEncoder()
-        computeEncoder?.setComputePipelineState(computePipeLineState!)
-        computeEncoder?.setTexture(texture, index: 0)
-        computeEncoder?.setTexture(view.currentDrawable?.texture, index: 1)
-        let threads = MTLSize(width: 16, height: 16, depth: 1)
-        
-        let threadgroups = MTLSize(width: texture!.width / threads.width,
-                                   height: texture!.height / threads.height,
-                                   depth: 1)
-        
-        computeEncoder?.dispatchThreadgroups(threadgroups, threadsPerThreadgroup: threads)
-        
-        computeEncoder?.endEncoding()
+        // 加载kernal
+        if let computePipeLineState = computePipeLineState {
+            let computeEncoder: MTLComputeCommandEncoder? = commandBuffer?.makeComputeCommandEncoder()
+            computeEncoder?.setComputePipelineState(computePipeLineState)
+            computeEncoder?.setTexture(texture, index: 0)
+            computeEncoder?.setTexture(view.currentDrawable?.texture, index: 1)
+            
+            
+            // GPU最大并发处理量
+            let w = computePipeLineState.threadExecutionWidth
+            
+            let h = computePipeLineState.maxTotalThreadsPerThreadgroup / w
+            
+            let threadsPerThreadgroup = MTLSizeMake(w, h, 1)
+            
+            let threadgroupsPerGrid = MTLSize(width: (texture!.width + w - 1) / w,
+                                              height: (texture!.width + h - 1) / h,
+                                              depth: 1)
+            
+            computeEncoder?.dispatchThreadgroups(threadgroupsPerGrid, threadsPerThreadgroup: threadsPerThreadgroup)
+            
+            computeEncoder?.endEncoding()
+        }
         
         commandBuffer?.present(view.currentDrawable!)
         commandBuffer?.commit()

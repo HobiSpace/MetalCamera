@@ -45,8 +45,8 @@ extension MetalRenderManager {
             Vertex.init(position: float4.init(0.5, -0.5, 0.0, 1.0), textureCoord: float2.init(1, 1)), // 右下角
 //            Vertex.init(position: float4.init(0.5,  0.5, 0.0, 1.0), textureCoord: float2.init(0, 1)), // 右上角
             ]
-        let indexArray = [
-            0, 1, 2,
+        let indexArray: [UInt16] = [
+            0, 1, 2
 //            1, 2, 3
         ]
         mtkView.device = MTLCreateSystemDefaultDevice()
@@ -91,8 +91,10 @@ extension MetalRenderManager: MTKViewDelegate {
         renderEncoder?.setRenderPipelineState(pipelineState!)
         renderEncoder?.setVertexBuffer(vertexBuffer, offset: 0, index: 0)
         let size = (indexBuffer?.length)! / MemoryLayout<UInt16>.stride
-//        renderEncoder?.drawIndexedPrimitives(type: .triangle, indexCount: size, indexType: MTLIndexType.uint16, indexBuffer: indexBuffer!, indexBufferOffset: 0)
-        renderEncoder?.drawPrimitives(type: MTLPrimitiveType.triangle, vertexStart: 0, vertexCount: 3)
+    
+        renderEncoder?.drawIndexedPrimitives(type: .triangle, indexCount: size, indexType: MTLIndexType.uint16, indexBuffer: indexBuffer!, indexBufferOffset: 0)
+       
+//        renderEncoder?.drawPrimitives(type: MTLPrimitiveType.triangle, vertexStart: 0, vertexCount: 3)
         renderEncoder?.endEncoding()
         
         commandBuffer?.present(view.currentDrawable!)
