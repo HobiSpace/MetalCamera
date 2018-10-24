@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		877BD22B2180D36C005D41E3 /* Camera.swift in Sources */ = {isa = PBXBuildFile; fileRef = 877BD22A2180D36C005D41E3 /* Camera.swift */; };
+		877BD22D2180D3DF005D41E3 /* MetalRender.swift in Sources */ = {isa = PBXBuildFile; fileRef = 877BD22C2180D3DF005D41E3 /* MetalRender.swift */; };
 		C627A865215398C400699D64 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = C627A864215398C400699D64 /* AppDelegate.swift */; };
 		C627A867215398C400699D64 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C627A866215398C400699D64 /* ViewController.swift */; };
 		C627A86A215398C400699D64 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = C627A868215398C400699D64 /* Main.storyboard */; };
@@ -36,6 +38,8 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		877BD22A2180D36C005D41E3 /* Camera.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Camera.swift; sourceTree = "<group>"; };
+		877BD22C2180D3DF005D41E3 /* MetalRender.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetalRender.swift; sourceTree = "<group>"; };
 		C627A861215398C400699D64 /* CameraDemo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CameraDemo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		C627A864215398C400699D64 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		C627A866215398C400699D64 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -135,6 +139,8 @@
 			isa = PBXGroup;
 			children = (
 				C627A894215398E400699D64 /* CameraManager.swift */,
+				877BD22A2180D36C005D41E3 /* Camera.swift */,
+				877BD22C2180D3DF005D41E3 /* MetalRender.swift */,
 			);
 			path = Camera;
 			sourceTree = "<group>";
@@ -279,7 +285,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				C627A8982153BD3400699D64 /* Shader.metal in Sources */,
+				877BD22B2180D36C005D41E3 /* Camera.swift in Sources */,
 				C627A867215398C400699D64 /* ViewController.swift in Sources */,
+				877BD22D2180D3DF005D41E3 /* MetalRender.swift in Sources */,
 				C627A895215398E400699D64 /* CameraManager.swift in Sources */,
 				C627A865215398C400699D64 /* AppDelegate.swift in Sources */,
 			);

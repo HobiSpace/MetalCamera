@@ -238,18 +238,6 @@ extension CameraManager: MTKViewDelegate {
         }
         
         let commandBuffer = commandQueue?.makeCommandBuffer()
-        let renderPassDes: MTLRenderPassDescriptor? = view.currentRenderPassDescriptor
-        guard renderPassDes != nil else {
-            return
-        }
-        
-        let renderEncoder: MTLRenderCommandEncoder? = commandBuffer?.makeRenderCommandEncoder(descriptor: renderPassDes!)
-        renderEncoder?.setViewport(MTLViewport.init(originX: 0, originY: 0, width: Double(view.drawableSize.width), height: Double(view.drawableSize.height), znear: -1, zfar: 1))
-        renderEncoder?.setRenderPipelineState(pipelineState!)
-        renderEncoder?.setVertexBuffer(vertex, offset: 0, index: 0)
-        renderEncoder?.setFragmentTexture(texture, index: 0)
-        renderEncoder?.drawPrimitives(type: MTLPrimitiveType.triangle, vertexStart: 0, vertexCount: 6)
-        renderEncoder?.endEncoding()
         
         // 加载kernal
         if let computePipeLineState = computePipeLineState {
@@ -273,6 +261,19 @@ extension CameraManager: MTKViewDelegate {
             computeEncoder?.dispatchThreadgroups(threadgroupsPerGrid, threadsPerThreadgroup: threadsPerThreadgroup)
             
             computeEncoder?.endEncoding()
+        } else {
+            let renderPassDes: MTLRenderPassDescriptor? = view.currentRenderPassDescriptor
+            guard renderPassDes != nil else {
+                return
+            }
+            
+            let renderEncoder: MTLRenderCommandEncoder? = commandBuffer?.makeRenderCommandEncoder(descriptor: renderPassDes!)
+            renderEncoder?.setViewport(MTLViewport.init(originX: 0, originY: 0, width: Double(view.drawableSize.width), height: Double(view.drawableSize.height), znear: -1, zfar: 1))
+            renderEncoder?.setRenderPipelineState(pipelineState!)
+            renderEncoder?.setVertexBuffer(vertex, offset: 0, index: 0)
+            renderEncoder?.setFragmentTexture(texture, index: 0)
+            renderEncoder?.drawPrimitives(type: MTLPrimitiveType.triangle, vertexStart: 0, vertexCount: 6)
+            renderEncoder?.endEncoding()
         }
         
         commandBuffer?.present(view.currentDrawable!)
