@@ -15,7 +15,9 @@ class Camera: NSObject {
     private lazy var cameraBackDevice: AVCaptureDevice? = cameraDeviceWithPosition(.back)
     private lazy var cameraDataOutput: AVCaptureVideoDataOutput = makeCameraVideoDataOutput()
     
-    var processQueue: DispatchQueue?
+    private lazy var processQueue: DispatchQueue = makeProcessQueue()
+    
+    var render: MetalRender?
     
     override init() {
         super.init()
@@ -32,6 +34,17 @@ extension Camera {
         cameraSession.addInput(deviceInput)
         cameraDataOutput.setSampleBufferDelegate(self, queue: processQueue)
         cameraSession.addOutput(cameraDataOutput)
+        let connection = cameraDataOutput.connection(with: .video)
+        connection?.videoOrientation = .portrait
+        cameraSession.startRunning()
+    }
+    
+    func addRender(render: MetalRender) {
+        self.render = render
+    }
+    
+    func removeRender(render: MetalRender) {
+        self.render = nil
     }
 }
 
@@ -43,8 +56,10 @@ extension Camera {
         return session
     }
     
-    func makeCameraVideoDataOutput() -> AVCaptureVideoDataOutput {
+    private func makeCameraVideoDataOutput() -> AVCaptureVideoDataOutput {
         let dataOutput = AVCaptureVideoDataOutput.init()
+        dataOutput.alwaysDiscardsLateVideoFrames = false
+        dataOutput.videoSettings = [kCVPixelBufferPixelFormatTypeKey as String : kCVPixelFormatType_32BGRA]
         return dataOutput
     }
     
@@ -59,11 +74,19 @@ extension Camera {
         }
         return nil
     }
+    
+    private func makeProcessQueue() -> DispatchQueue {
+        let queue: DispatchQueue = DispatchQueue.init(label: "com.hobi.data")
+        return queue
+    }
 }
 
 // MARK: - AVCaptureVideoDataOutputSampleBufferDelegate
 extension Camera: AVCaptureVideoDataOutputSampleBufferDelegate {
     func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
-        
+        guard let render = render, let pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else {
+            return
+        }
+        render.render(pixelBuffer: pixelBuffer)
     }
 }

@@ -212,6 +212,7 @@ extension CameraManager: AVCaptureVideoDataOutputSampleBufferDelegate {
   
         var metalTexutreRef: CVMetalTexture?
     
+        
         CVPixelBufferLockBaseAddress(pixelBuffer, [])
         let status: CVReturn = CVMetalTextureCacheCreateTextureFromImage(kCFAllocatorDefault, textureCache, pixelBuffer, nil, MTLPixelFormat.bgra8Unorm, width, height, 0, &metalTexutreRef)
 
