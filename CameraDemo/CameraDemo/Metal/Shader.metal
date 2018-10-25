@@ -47,7 +47,19 @@ fragment half4 fragmentShader(
     return colorSample;
 }
 
+// Rec. 709 luma values for grayscale image conversion
 
+kernel void original_kernel_function(texture2d<half, access::read> inTexture [[texture(0)]],
+                                 texture2d<half, access::write> outTexture [[texture(1)]],
+                                 uint2 gid [[thread_position_in_grid]]) {
+    
+//    if (gid.x >= outTexture.get_width() || gid.y >= outTexture.get_height()) {
+//        return;
+//    }
+    
+    half4 inColor  = inTexture.read(gid);
+    outTexture.write(inColor, gid);
+}
 
 // Rec. 709 luma values for grayscale image conversion
 constant half3 kRec709Luma = half3(0.2126, 0.7152, 0.0722);

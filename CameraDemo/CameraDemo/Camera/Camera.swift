@@ -36,6 +36,7 @@ extension Camera {
         cameraSession.addOutput(cameraDataOutput)
         let connection = cameraDataOutput.connection(with: .video)
         connection?.videoOrientation = .portrait
+        cameraSession.sessionPreset = AVCaptureSession.Preset.hd1280x720
         cameraSession.startRunning()
     }
     
@@ -52,7 +53,6 @@ extension Camera {
 extension Camera {
     private func makeCameraSession() -> AVCaptureSession {
         let session = AVCaptureSession.init()
-        session.sessionPreset = AVCaptureSession.Preset.hd1280x720
         return session
     }
     
