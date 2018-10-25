@@ -111,11 +111,11 @@ class MetalRender: NSObject {
             displayView.drawableSize = CGSize(width: width, height: height)
             sourceTexture = CVMetalTextureGetTexture(textureRef)
             // 渲染目标创建
-            if destinTexture == nil, let device = displayView.device {
+            if destinTexture == nil, let device = displayView.device, let sourceTexture = sourceTexture {
                 let textureDes = MTLTextureDescriptor.init()
                 textureDes.pixelFormat = MTLPixelFormat.rgba8Unorm
-                textureDes.width = width
-                textureDes.height = height
+                textureDes.width = sourceTexture.width
+                textureDes.height = sourceTexture.height
                 textureDes.usage = [.shaderWrite, .shaderRead]
                 destinTexture = device.makeTexture(descriptor: textureDes)
             }
@@ -155,7 +155,7 @@ extension MetalRender: MTKViewDelegate {
             computeEncoder.setComputePipelineState(computePipeLineState)
             computeEncoder.setTexture(sourceTexture, index: 0)
             computeEncoder.setTexture(destinTexture, index: 1)
-            
+
             // GPU最大并发处理量
             let w = computePipeLineState.threadExecutionWidth
 

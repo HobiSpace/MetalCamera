@@ -19,7 +19,7 @@ class ViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         mtkView = MTKView.init(frame: self.view.bounds)
-        self.view.addSubview(mtkView)
+        self.view.insertSubview(mtkView, at: 0)
         
         render = MetalRender()
         render.configDisplayView(view: mtkView)

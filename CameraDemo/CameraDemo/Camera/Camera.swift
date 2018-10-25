@@ -35,7 +35,7 @@ extension Camera {
         cameraDataOutput.setSampleBufferDelegate(self, queue: processQueue)
         cameraSession.addOutput(cameraDataOutput)
         let connection = cameraDataOutput.connection(with: .video)
-        connection?.videoOrientation = .portrait
+        connection?.videoOrientation = .portraitUpsideDown
         cameraSession.sessionPreset = AVCaptureSession.Preset.hd1280x720
         cameraSession.startRunning()
     }
