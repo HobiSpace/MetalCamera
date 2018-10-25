@@ -113,7 +113,7 @@ class MetalRender: NSObject {
             // 渲染目标创建
             if destinTexture == nil, let device = displayView.device, let sourceTexture = sourceTexture {
                 let textureDes = MTLTextureDescriptor.init()
-                textureDes.pixelFormat = MTLPixelFormat.rgba8Unorm
+                textureDes.pixelFormat = sourceTexture.pixelFormat
                 textureDes.width = sourceTexture.width
                 textureDes.height = sourceTexture.height
                 textureDes.usage = [.shaderWrite, .shaderRead]
@@ -156,6 +156,8 @@ extension MetalRender: MTKViewDelegate {
             computeEncoder.setTexture(sourceTexture, index: 0)
             computeEncoder.setTexture(destinTexture, index: 1)
 
+            
+            
             // GPU最大并发处理量
             let w = computePipeLineState.threadExecutionWidth
 
@@ -164,7 +166,7 @@ extension MetalRender: MTKViewDelegate {
             let threadsPerThreadgroup = MTLSizeMake(w, h, 1)
 
             let threadgroupsPerGrid = MTLSize(width: (sourceTexture.width + w - 1) / w,
-                                              height: (sourceTexture.width + h - 1) / h,
+                                              height: (sourceTexture.height + h - 1) / h,
                                               depth: 1)
 
             computeEncoder.dispatchThreadgroups(threadgroupsPerGrid, threadsPerThreadgroup: threadsPerThreadgroup)

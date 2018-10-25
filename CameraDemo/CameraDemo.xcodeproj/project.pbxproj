@@ -16,7 +16,6 @@
 		C627A86F215398C600699D64 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = C627A86D215398C600699D64 /* LaunchScreen.storyboard */; };
 		C627A87A215398C600699D64 /* CameraDemoTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C627A879215398C600699D64 /* CameraDemoTests.swift */; };
 		C627A885215398C600699D64 /* CameraDemoUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C627A884215398C600699D64 /* CameraDemoUITests.swift */; };
-		C627A895215398E400699D64 /* CameraManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = C627A894215398E400699D64 /* CameraManager.swift */; };
 		C627A8982153BD3400699D64 /* Shader.metal in Sources */ = {isa = PBXBuildFile; fileRef = C627A8972153BD3400699D64 /* Shader.metal */; };
 /* End PBXBuildFile section */
 
@@ -53,7 +52,6 @@
 		C627A880215398C600699D64 /* CameraDemoUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CameraDemoUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		C627A884215398C600699D64 /* CameraDemoUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraDemoUITests.swift; sourceTree = "<group>"; };
 		C627A886215398C600699D64 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		C627A894215398E400699D64 /* CameraManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraManager.swift; sourceTree = "<group>"; };
 		C627A8972153BD3400699D64 /* Shader.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = Shader.metal; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -138,7 +136,6 @@
 		C627A892215398CD00699D64 /* Camera */ = {
 			isa = PBXGroup;
 			children = (
-				C627A894215398E400699D64 /* CameraManager.swift */,
 				877BD22A2180D36C005D41E3 /* Camera.swift */,
 				877BD22C2180D3DF005D41E3 /* MetalRender.swift */,
 			);
@@ -288,7 +285,6 @@
 				877BD22B2180D36C005D41E3 /* Camera.swift in Sources */,
 				C627A867215398C400699D64 /* ViewController.swift in Sources */,
 				877BD22D2180D3DF005D41E3 /* MetalRender.swift in Sources */,
-				C627A895215398E400699D64 /* CameraManager.swift in Sources */,
 				C627A865215398C400699D64 /* AppDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
